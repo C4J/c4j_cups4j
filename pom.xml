@@ -1,218 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <groupId>org.cups4j</groupId>
-  <artifactId>cups4j</artifactId>
-  <version>0.8.1</version>
-  <packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
 
-  <name>cups4j</name>
-  <description>Java printing library for CUPS/IPP</description>
-  <url>http://cups4j.org</url>
+    <groupId>com.commander4j</groupId>
+    <artifactId>c4j_cups4j</artifactId>
+    <version>0.8.1-jakarta</version>
+    <packaging>jar</packaging>
 
-  <licenses>
-    <license>
-      <name>LGPL license, Version 3.0</name>
-      <url>https://www.gnu.org/licenses/lgpl.txt</url>
-    </license>
-  </licenses>
+    <name>c4j_cups4j</name>
+    <description>Commander4j fork of cups4j (Java printing library for CUPS/IPP), migrated from javax.xml.bind to jakarta.xml.bind.</description>
 
-  <developers>
-    <developer>
-      <name>Harald Weyhing</name>
-      <email>info@cups4j.org</email>
-      <organization>Harald Weyhing</organization>
-      <organizationUrl>http://cups4j.org</organizationUrl>
-    </developer>
-    <developer>
-      <name>Oliver Böhm</name>
-      <email>ob@jugs.org</email>
-      <organization>Java User Group Stuttgart</organization>
-      <organizationUrl>https://jugs.org</organizationUrl>
-    </developer>
-  </developers>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
 
-  <scm>
-    <connection>scm:git:git://github.com/harwey/cups4j</connection>
-    <developerConnection>scm:git:ssh://github.com:harwey/cups4j</developerConnection>
-    <url>http://github.com/harwey/cups4j/tree/master</url>
-  </scm>
+        <jaxb.api.version>4.0.5</jaxb.api.version>
+        <jaxb.version>4.0.7</jaxb.version>
+    </properties>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                    <exclude>**/.DS_Store</exclude>
+                </excludes>
+            </resource>
+        </resources>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-  </properties>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <version>1.21.4</version>
-      <scope>test</scope>
-    </dependency>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.10.0</version>
+            </plugin>
+        </plugins>
+    </build>
 
-    <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-      <version>2.3.5</version>
-    </dependency>
+    <dependencies>
 
-    <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-      <version>5.4.3</version>
-    </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jaxb.api.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
-    </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-runtime -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${jaxb.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.36</version>
-      <scope>test</scope>
-    </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.6</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.17.0</version>
-    </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.17</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.20.0</version>
-    </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.21.0</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.17.1</version>
-    </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.20.0</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-forms -->
-    <dependency>
-      <groupId>com.jgoodies</groupId>
-      <artifactId>jgoodies-forms</artifactId>
-      <version>1.7.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.14.2</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        <!-- Source: https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.21.0</version>
+            <scope>compile</scope>
+        </dependency>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>dependency-copy-lib</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
-        <configuration>
-          <archive>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-            <configuration>
-              <doclint>none</doclint>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-    	<groupId>org.apache.maven.plugins</groupId>
-    	<artifactId>maven-gpg-plugin</artifactId>
-    	<version>1.5</version>
-    	<executions>
-     	<execution>
-      	<id>sign-artifacts</id>
-      	<phase>verify</phase>
-      	<goals>
-       		<goal>sign</goal>
-      	</goals>
-     	</execution>
-    	</executions>
-   	   </plugin>
-       <plugin>
-          <groupId>org.sonatype.central</groupId>
-          <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.9.0</version>
-          <extensions>true</extensions>
-          <configuration>
-            <publishingServerId>central</publishingServerId>
-            <autoPublish>true</autoPublish>
-          </configuration>
-        </plugin>
-    </plugins>
-  </build>
+    </dependencies>
 </project>

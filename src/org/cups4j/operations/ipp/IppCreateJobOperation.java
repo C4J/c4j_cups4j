@@ -1,0 +1,249 @@
+/*
+ * Copyright (c) 2018-2026 by Oliver Boehm
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ * (c)reated 23.03.2018 by oboehm (ob@oasd.de)
+ */
+package org.cups4j.operations.ipp;
+
+import ch.ethz.vppserver.ippclient.IppResponse;
+import ch.ethz.vppserver.ippclient.IppResult;
+import ch.ethz.vppserver.ippclient.IppTag;
+import org.apache.commons.io.IOUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.InputStreamEntity;
+import org.cups4j.CupsAuthentication;
+import org.cups4j.CupsClient;
+import org.cups4j.CupsPrinter;
+import org.cups4j.operations.IppHttp;
+import org.cups4j.operations.IppOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * The class IppCreateJobOperation represents the create-job operation.
+ *
+ * @author oboehm
+ *
+ * @since 0.7.2 (23.03.2018)
+ */
+public class IppCreateJobOperation extends IppOperation {
+
+    private static final Logger log = LoggerFactory.getLogger(IppCreateJobOperation.class);
+
+    public IppCreateJobOperation() {
+        operationID = 0x0005;
+    }
+
+    public IppCreateJobOperation(int port) {
+        this();
+        this.ippPort = port;
+    }
+
+    /**
+     * Gets the IPP header with requesting-user-name.
+     *
+     * @param url where to send the request
+     *
+     * @return IPP header
+     *
+     * @throws UnsupportedEncodingException if encoding is not supported.
+     * @deprecated replaced by {@link #getIppHeader(URI, Map)}
+     */
+    @Deprecated(forRemoval = true)
+    @Override
+    public ByteBuffer getIppHeader(URL url)
+            throws UnsupportedEncodingException {
+        return getIppHeader(URI.create(url.toString()), createAttributeMap());
+    }
+
+    /**
+     * Gets the IPP header with requesting-user-name.
+     *
+     * @param url where to send the request
+     * @return IPP header
+     * @throws UnsupportedEncodingException if encoding is not supported.
+     * @since 0.8.1
+     */
+    public ByteBuffer getIppHeader(URI url) throws UnsupportedEncodingException {
+        return getIppHeader(url, createAttributeMap());
+    }
+
+    private static Map<String, String> createAttributeMap() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("requesting-user-name", CupsClient.DEFAULT_USER);
+        return map;
+    }
+
+    /**
+     * Gets the IPP header with requesting-user-name and job-name.
+     *
+     * @param url where to send the request
+     * @param map attributes
+     * @return IPP header
+     * @throws UnsupportedEncodingException if encoding is not supported.
+     * @since 0.8 (oboehm)
+     */
+    @Override
+    public ByteBuffer getIppHeader(URI url, Map<String, String> map) throws UnsupportedEncodingException {
+        ByteBuffer ippBuf = ByteBuffer.allocateDirect(bufferSize);
+        ippBuf = IppTag.getOperation(ippBuf, operationID);
+        ippBuf = IppTag.getUri(ippBuf, "printer-uri", url.toString());
+        ippBuf = IppTag.getNameWithoutLanguage(ippBuf, "requesting-user-name",
+                map.get("requesting-user-name"));
+
+        if (map.get("limit") != null) {
+            int value = Integer.parseInt(map.get("limit"));
+            ippBuf = IppTag.getInteger(ippBuf, "limit", value);
+        }
+
+        if (map.get("requested-attributes") != null) {
+            String[] sta = map.get("requested-attributes").split(" ");
+            if (sta != null) {
+                ippBuf = IppTag.getKeyword(ippBuf, "requested-attributes",
+                        sta[0]);
+                int l = sta.length;
+                for (int i = 1; i < l; i++) {
+                    ippBuf = IppTag.getKeyword(ippBuf, null, sta[i]);
+                }
+            }
+        }
+
+        if (map.get("job-name") != null) {
+            ippBuf = IppTag.getNameWithoutLanguage(ippBuf, "job-name",
+                    map.get("job-name"));
+        }
+
+        ippBuf = IppTag.getEnd(ippBuf);
+        ippBuf.flip();
+        return ippBuf;
+    }
+
+    public IppResult request(CupsPrinter printer, URL url,
+            CupsAuthentication creds) {
+        return request(printer, url, createAttributeMap(), creds);
+    }
+
+    /**
+     * Requests the given printer.
+     *
+     * @param printer printer
+     * @param url     printer URI
+     * @param creds   credentials
+     * @return IPP result
+     * @since 0.8
+     */
+    public IppResult request(CupsPrinter printer, URI url, CupsAuthentication creds) {
+        return request(printer, url, createAttributeMap(), creds);
+    }
+
+    @Deprecated(forRemoval = true)
+    @Override
+    @SuppressWarnings("removal")
+    public IppResult request(CupsPrinter printer, URL url, Map<String, String> map, CupsAuthentication creds) {
+        return request(printer, URI.create(url.toString()), map, creds);
+    }
+
+    /**
+     * Requests the given printer.
+     *
+     * @param printer printer
+     * @param url     printer URI
+     * @param map     printer attributes
+     * @param creds   credential
+     * @return IPP result
+     * @sinde 0.8
+     */
+    public IppResult request(CupsPrinter printer, URI url, Map<String, String> map, CupsAuthentication creds) {
+        try {
+            return sendRequest(printer, url, getIppHeader(url, map), creds);
+        } catch (IOException ex) {
+            throw new IllegalStateException("cannot request " + url, ex);
+        }
+    }
+
+    private static IppResult sendRequest(CupsPrinter printer, URI uri,
+            ByteBuffer ippBuf,
+            CupsAuthentication creds) throws IOException {
+        CloseableHttpClient client = IppHttp.createHttpClient();
+
+        HttpPost httpPost = new HttpPost(uri);
+        IppHttp.setHttpHeaders(httpPost, printer, creds);
+
+        byte[] bytes = new byte[ippBuf.limit()];
+        ippBuf.get(bytes);
+
+        ByteArrayInputStream headerStream = new ByteArrayInputStream(bytes);
+
+        // set length to -1 to advice the entity to read until EOF
+        InputStreamEntity requestEntity =
+                new InputStreamEntity(headerStream, -1,
+                        ContentType.create(IPP_MIME_TYPE));
+
+        httpPost.setEntity(requestEntity);
+        HttpClientResponseHandler<IppResult> handler =
+                new HttpClientResponseHandler<IppResult>() {
+                    @Override
+                    public IppResult handleResponse(
+                            ClassicHttpResponse response)
+                            throws HttpException, IOException {
+                        if (log.isDebugEnabled()) {
+                             log.debug("Response body");
+                             log.debug(Base64.getEncoder().encodeToString(IOUtils.toByteArray(response.getEntity().getContent())));
+                        }
+                        return toIppResult(response);
+                    }
+                };
+
+        return client.execute(httpPost, handler);
+    }
+
+    private static IppResult toIppResult(ClassicHttpResponse httpResponse)
+            throws IOException {
+        try {
+            IppResponse ippResponse = new IppResponse();
+            IppResult ippResult =
+                    ippResponse.getResponse(read(httpResponse.getEntity()));
+            ippResult.setHttpStatusResponse(httpResponse.getReasonPhrase());
+            ippResult.setHttpStatusCode(httpResponse.getCode());
+            return ippResult;
+        } finally {
+            try {
+                httpResponse.close();
+            } catch (IOException e) {}
+        }
+    }
+
+    private static ByteBuffer read(HttpEntity entity) throws IOException {
+        byte[] bytes = IOUtils.toByteArray(entity.getContent());
+        return ByteBuffer.wrap(bytes);
+    }
+
+}

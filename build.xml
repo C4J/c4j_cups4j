@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="c4j_cups4j" basedir="." default="jar">
+
+    <property name="artifact.name"    value="c4j_cups4j"/>
+    <property name="artifact.version" value="0.8.1-jakarta"/>
+    <property name="jar.file"         value="${artifact.name}-${artifact.version}.jar"/>
+
+    <property name="src.dir" value="src"/>
+    <property name="bin.dir" value="bin"/>
+    <property name="lib.dir" value="lib"/>
+
+    <property name="java.release" value="21"/>
+    <property name="debuglevel"   value="source,lines,vars"/>
+
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="clean" description="Delete bin/ and the built jar.">
+        <delete dir="${bin.dir}"/>
+        <delete file="${jar.file}"/>
+    </target>
+
+    <target name="init">
+        <mkdir dir="${bin.dir}"/>
+    </target>
+
+    <target name="compile" depends="init" description="Compile sources and copy resources to bin/.">
+        <javac srcdir="${src.dir}"
+               destdir="${bin.dir}"
+               release="${java.release}"
+               includeantruntime="false"
+               debug="true"
+               debuglevel="${debuglevel}">
+            <classpath refid="compile.classpath"/>
+        </javac>
+        <copy todir="${bin.dir}">
+            <fileset dir="${src.dir}">
+                <exclude name="**/*.java"/>
+                <exclude name="**/.DS_Store"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="jar" depends="compile" description="Build ${jar.file} in the project root.">
+        <jar destfile="${jar.file}" basedir="${bin.dir}">
+            <manifest>
+                <attribute name="Implementation-Title"   value="${artifact.name}"/>
+                <attribute name="Implementation-Version" value="${artifact.version}"/>
+            </manifest>
+        </jar>
+        <echo message="Built ${jar.file}"/>
+    </target>
+
+    <target name="rebuild" depends="clean,jar" description="Clean then build the jar."/>
+
+</project>
