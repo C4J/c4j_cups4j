@@ -164,9 +164,7 @@ public class IppCreateJobOperation extends IppOperation {
         return request(printer, url, createAttributeMap(), creds);
     }
 
-    @Deprecated(forRemoval = true)
     @Override
-    @SuppressWarnings("removal")
     public IppResult request(CupsPrinter printer, URL url, Map<String, String> map, CupsAuthentication creds) {
         return request(printer, URI.create(url.toString()), map, creds);
     }
